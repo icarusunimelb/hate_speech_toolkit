@@ -1,0 +1,97 @@
+# Project configuration template for hate_speech_toolkit.
+# Copy this file, fill it in, and pass it to every stage:  python -m hst.<stage> --config my_project.yaml
+# Relative paths are resolved against the folder that holds this YAML.
+
+project: my_project
+platforms: [x, telegram, instagram]        # any subset of x | telegram | instagram
+timezone: Australia/Sydney
+
+study_period:                                # the shared analysis window (inclusive)
+  start: "2026-01-01"
+  end: "2026-06-30"
+
+paths:
+  raw: raw            # raw exports:  raw/x/<export folders>, raw/telegram/*.csv, raw/instagram/*.csv
+  work: work          # everything the toolkit writes: records/, training/, llm/, analysis/
+  models: models      # trained classifier folders, one per category
+
+# ---- supervised (RoBERTa) categories --------------------------------------------------------
+# A category is positive when an annotation says hate_presence == Yes AND target_group contains
+# `target_group`.  `threshold` is applied to the model probability when scoring.
+# `model` (optional) overrides the default  <paths.models>/<category>.
+categories:
+  anti_women:
+    label: Anti-women
+    target_group: Women
+    threshold: 0.35
+  anti_diverse_genders:
+    label: Anti-diverse genders
+    target_group: Diverse genders
+    threshold: 0.25
+
+# ---- annotation exports ---------------------------------------------------------------------
+# One or more annotation-tool exports with (at least) the columns:
+#   id, annotation_id, annotator, text, hate_presence (Yes/No), target_group
+annotations:
+  files: [annotations/annotations.csv]
+  aggregation: majority          # majority | any | unanimous  (how multiple annotators are combined)
+  min_annotations: 1
+
+# ---- training defaults (override on the command line if needed) ----------------------------
+training:
+  base_model: FacebookAI/roberta-large
+  max_length: 256
+  epochs: 5
+  batch_size: 16
+  learning_rate: 1.0e-5
+  test_size: 0.15
+  validation_size: 0.15
+  seed: 42
+
+# ---- LLM (prompt-based) categories ----------------------------------------------------------
+llm:
+  model: Qwen/Qwen2.5-14B-Instruct
+  prompt: null                    # null = the bundled hst/llm/prompts/extremist_discourse_v5_1.txt; or a path to your own
+  schema: null                    # null = the bundled hst/llm/prompts/extremist_schema_v2.json
+  strict_confidence: 0.8          # "strict" tier = label AND self-reported confidence >= this
+  batch_size: 64
+  max_tokens: 400
+  categories:                     # names must match the keys in the JSON schema
+    legitimation_political_violence: {label: Legitimation of political violence}
+    revolutionary_accelerationist: {label: Revolutionary / accelerationist}
+    eliminationist_logic: {label: Eliminationist logic}
+    totalising_apocalyptic_conspiracy: {label: Totalising / apocalyptic conspiracy}
+
+# ---- events (for event windows and interrupted time series) ---------------------------------
+events:
+  - {id: E01, date: "2026-02-10", label: "First event"}
+  - {id: E02, date: "2026-04-05", label: "Second event"}
+event_window_days: 7               # descriptive before/after window
+its_pre_days: 21                   # ITS fit window before the event
+its_post_days: 14                  # ITS fit window after the event
+
+# ---- spike detection --------------------------------------------------------------------------
+spikes:
+  top: 8
+  window_days: 7
+  baseline_days: 14
+  z_threshold: 3.0
+  min_count: 10
+  min_separation_days: 15
+  volume_fraction: 0.5
+  exclude_after_gap_days: 7
+  min_baseline_observed_days: 10
+  samples_per_period: 10
+
+# ---- networks -----------------------------------------------------------------------------------
+network:
+  min_degree: 2                    # drop accounts with fewer interactions before drawing
+  max_nodes: 2500                  # keep the top-N accounts by PageRank for the drawing
+  before_after:                    # optional comparable before/after snapshots
+    before: {start: "2026-01-13", end: "2026-02-09", label: "Before the event"}
+    after: {start: "2026-02-11", end: "2026-03-10", label: "After the event"}
+
+# ---- geography (X only) ------------------------------------------------------------------------
+geography:
+  population_csv: null             # CSV with columns State,population (defaults to built-in ABS-style figures)
+  min_city_users: 20

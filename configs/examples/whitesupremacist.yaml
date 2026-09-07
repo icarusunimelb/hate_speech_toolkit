@@ -1,0 +1,88 @@
+# Example: the white-supremacist discourse study (X + Telegram + Instagram, five hate categories,
+# four LLM extremist-discourse categories, eleven dated events). Paths are illustrative.
+
+project: whitesupremacist
+platforms: [x, telegram, instagram]
+timezone: Australia/Sydney
+
+study_period:
+  start: "2025-09-14"
+  end: "2026-07-01"
+
+paths:
+  raw: raw
+  work: work
+  models: models
+
+categories:
+  anti_jewish:              {label: Anti-Jewish,              target_group: Jewish,              threshold: 0.5}
+  anti_muslim:              {label: Anti-Muslim,              target_group: Muslims,             threshold: 0.5}
+  anti_women:               {label: Anti-women,               target_group: Women,               threshold: 0.35}
+  anti_diverse_sexualities: {label: Anti-diverse sexualities, target_group: Diverse sexualities, threshold: 0.5}
+  anti_diverse_genders:     {label: Anti-diverse genders,     target_group: Diverse genders,     threshold: 0.25}
+
+annotations:
+  files: [annotations/annotations.csv]
+  aggregation: majority
+  min_annotations: 1
+
+training:
+  base_model: FacebookAI/roberta-large
+  max_length: 256
+  epochs: 5
+  batch_size: 16
+  learning_rate: 1.0e-5
+  test_size: 0.15
+  validation_size: 0.15
+  seed: 42
+
+llm:
+  model: Qwen/Qwen2.5-14B-Instruct
+  prompt: ../../hst/llm/prompts/extremist_discourse_v5_1.txt
+  schema: ../../hst/llm/prompts/extremist_schema_v2.json
+  strict_confidence: 0.8
+  batch_size: 64
+  max_tokens: 400
+  categories:
+    legitimation_political_violence: {label: Legitimation of political violence}
+    revolutionary_accelerationist: {label: Revolutionary / accelerationist}
+    eliminationist_logic: {label: Eliminationist logic}
+    totalising_apocalyptic_conspiracy: {label: Totalising / apocalyptic conspiracy}
+
+events:
+  - {id: E01, date: "2025-10-19", label: "March for Australia"}
+  - {id: E02, date: "2025-11-08", label: "NSW Parliament 'Jewish lobby' protest and the Gruter enforcement action"}
+  - {id: E03, date: "2025-11-20", label: "Arrest of Joel Davis"}
+  - {id: E04, date: "2025-12-04", label: "Deportation of Matthew Gruter"}
+  - {id: E05, date: "2026-01-18", label: "Announced disbandment of the National Socialist Network / White Australia"}
+  - {id: E06, date: "2026-01-22", label: "Commencement of the anti-hate / extremism legislation"}
+  - {id: E07, date: "2026-01-26", label: "Australia Day / March for Australia"}
+  - {id: E08, date: "2026-02-04", label: "Sentencing of Jacob Hersant"}
+  - {id: E09, date: "2026-02-18", label: "Sentencing of Brandan Koschel"}
+  - {id: E10, date: "2026-04-02", label: "Release of Joel Davis on bail"}
+event_window_days: 7
+its_pre_days: 21
+its_post_days: 14
+
+spikes:
+  top: 8
+  window_days: 7
+  baseline_days: 14
+  z_threshold: 3.0
+  min_count: 10
+  min_separation_days: 15
+  volume_fraction: 0.5
+  exclude_after_gap_days: 7
+  min_baseline_observed_days: 10
+  samples_per_period: 10
+
+network:
+  min_degree: 2
+  max_nodes: 2500
+  before_after:
+    before: {start: "2025-12-19", end: "2026-01-17", label: "30 days before the disbandment"}
+    after: {start: "2026-01-23", end: "2026-02-21", label: "30 days after the legislation"}
+
+geography:
+  population_csv: null
+  min_city_users: 20

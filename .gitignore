@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+work/
+models/
+tests/
+pytest.ini
+toy_data/
+configs/examples/toy.yaml
+*.log
+.ipynb_checkpoints/

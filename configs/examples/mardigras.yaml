@@ -1,0 +1,65 @@
+# Example: the Mardi Gras study (X only, two categories: anti-diverse-genders and
+# anti-diverse-sexualities; several yearly collection windows merged by ingest). Paths are illustrative.
+
+project: mardigras
+platforms: [x]
+timezone: Australia/Sydney
+
+study_period:
+  start: "2022-01-01"
+  end: "2026-03-30"
+
+paths:
+  raw: raw            # raw/x/<one folder per Brandwatch export>; overlapping exports are de-duplicated
+  work: work
+  models: models
+
+categories:
+  anti_diverse_genders:     {label: Anti-diverse genders,     target_group: Diverse genders,     threshold: 0.5}
+  anti_diverse_sexualities: {label: Anti-diverse sexualities, target_group: Diverse sexualities, threshold: 0.5}
+
+annotations:
+  files:
+    - annotations/TrainingData_DiverseGenders.csv
+    - annotations/TrainingData_DiverseSexualities.csv
+  aggregation: majority
+  min_annotations: 1
+
+training:
+  base_model: FacebookAI/roberta-large
+  max_length: 256
+  epochs: 5
+  batch_size: 16
+  learning_rate: 1.0e-5
+  test_size: 0.15
+  validation_size: 0.15
+  seed: 42
+
+llm:
+  categories: {}
+
+events:
+  - {id: E01, date: "2026-02-28", label: "Mardi Gras parade"}
+event_window_days: 7
+its_pre_days: 21
+its_post_days: 14
+
+spikes:
+  top: 8
+  window_days: 7
+  baseline_days: 14
+  z_threshold: 3.0
+  min_count: 10
+  min_separation_days: 15
+  volume_fraction: 0.5
+  exclude_after_gap_days: 7
+  min_baseline_observed_days: 10
+  samples_per_period: 10
+
+network:
+  min_degree: 5
+  max_nodes: 5000
+
+geography:
+  population_csv: null
+  min_city_users: 20

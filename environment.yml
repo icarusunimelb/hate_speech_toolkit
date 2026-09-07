@@ -1,0 +1,24 @@
+# One environment for the whole toolkit.
+#   conda env create -f environment.yml
+#   conda activate hst
+# vLLM (for the LLM stage) is GPU-only and installed separately: pip install vllm
+name: hst
+channels: [conda-forge]
+dependencies:
+  - python=3.11
+  - pip
+  - pandas>=2.1
+  - numpy
+  - scipy
+  - scikit-learn
+  - statsmodels>=0.14
+  - networkx>=3.2
+  - python-igraph>=0.10
+  - matplotlib>=3.8
+  - pyyaml
+  - openpyxl
+  - tqdm
+  - pip:
+      - torch>=2.1
+      - transformers>=4.45
+      - accelerate

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "frame_verdict",
+    "frame_reason",
+    "legitimation_political_violence",
+    "revolutionary_accelerationist",
+    "eliminationist_logic",
+    "totalising_apocalyptic_conspiracy",
+    "rationale"
+  ],
+  "properties": {
+    "frame_verdict": { "type": "string", "enum": ["supremacist_outcome", "not_supremacist"] },
+    "frame_reason": { "type": "string", "maxLength": 200 },
+    "legitimation_political_violence": { "$ref": "#/$defs/category_decision" },
+    "revolutionary_accelerationist": { "$ref": "#/$defs/category_decision" },
+    "eliminationist_logic": { "$ref": "#/$defs/category_decision" },
+    "totalising_apocalyptic_conspiracy": { "$ref": "#/$defs/category_decision" },
+    "rationale": { "type": "string", "maxLength": 480 }
+  },
+  "$defs": {
+    "category_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "confidence", "evidence"],
+      "properties": {
+        "label": { "type": "boolean" },
+        "confidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "evidence": { "type": "string", "maxLength": 240 }
+      }
+    }
+  }
+}
